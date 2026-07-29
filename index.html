@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lithica GeoTech - Base de Conocimiento Geotécnica Versionada</title>
+  <meta name="description" content="Plataforma de conocimiento e ingeniería de rocas versionada, trazable y dinámica de la familia Lithica.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="assets/branding/logo.png">
+  <link rel="apple-touch-icon" href="assets/branding/logo.png">
+
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Launch Splash Screen Overlay (Matching Lithica Atlas) -->
+  <div id="launch-splash" class="launch-splash">
+    <div class="splash-content">
+      <img src="assets/branding/logo_complete.png" alt="Lithica GeoTech" class="splash-logo">
+    </div>
+  </div>
+
+  <!-- Topographic Dynamic Background -->
+  <div class="lithica-bg-container">
+    <div class="bg-gradient-base"></div>
+    <div class="bg-radial-teal"></div>
+    <div class="bg-radial-green"></div>
+    <canvas id="topographic-canvas"></canvas>
+  </div>
+
+  <!-- App Wrapper -->
+  <div id="app">
+    <!-- Header / Navbar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <img src="assets/branding/logo.png" alt="Lithica Logo" width="28" height="28" style="object-fit: contain;">
+        </div>
+        <div class="brand-titles">
+          <h1>Lithica <span>GeoTech</span></h1>
+          <span class="version-badge">KB v1.0 (2026)</span>
+        </div>
+      </div>
+
+      <!-- Center Navigation Tabs -->
+      <nav class="header-nav">
+        <button class="nav-btn active" data-tab="knowledge-base">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span data-i18n="nav_kb">Base de Conocimiento</span>
+        </button>
+        <button class="nav-btn" data-tab="rmr-calculator">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+          <span data-i18n="nav_rmr">RMR Bieniawski</span>
+        </button>
+        <button class="nav-btn" data-tab="q-system">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span data-i18n="nav_q">Q-System Barton</span>
+        </button>
+        <button class="nav-btn" data-tab="hoek-brown">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/></svg>
+          <span data-i18n="nav_hoek">Hoek-Brown & GSI</span>
+        </button>
+        <button class="nav-btn" data-tab="isrm-standards">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span data-i18n="nav_isrm">Estándares ISRM</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Engineer vs Expert Toggle & Settings) -->
+      <div class="header-actions">
+        <div class="mode-toggle-wrapper">
+          <span class="mode-label engineer-label" data-i18n="mode_engineer">Ingeniero</span>
+          <label class="switch">
+            <input type="checkbox" id="expert-mode-toggle">
+            <span class="slider round"></span>
+          </label>
+          <span class="mode-label expert-label" data-i18n="mode_expert">Experto</span>
+        </div>
+        <button id="open-settings-btn" class="icon-btn-header" data-i18n-title="settings_tooltip" title="Configuraciones y Preferencias">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+      
+      <!-- TAB 1: Base de Conocimiento de Materiales & Resolución de Contradicciones -->
+      <section id="tab-knowledge-base" class="tab-panel active">
+        <div class="panel-header">
+          <div>
+            <h2>Biblioteca Geotécnica de Materiales</h2>
+            <p class="subtitle">Propiedades versionadas de rocas y suelos con trazabilidad bibliográfica y nivel de confianza.</p>
+          </div>
+          <div class="search-filter-bar">
+            <div class="search-input-wrapper">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="material-search" placeholder="Buscar litología (ej. Granito, Andesita, Basalto)...">
+            </div>
+            <select id="material-category-filter">
+              <option value="all">Todas las Litologías</option>
+              <option value="igneous">Ígneas</option>
+              <option value="sedimentary">Sedimentarias</option>
+              <option value="metamorphic">Metamórficas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-layout-kb">
+          <!-- Material List Sidebar -->
+          <div class="glass-card material-list-card">
+            <h3>Catálogo de Litologías</h3>
+            <ul id="material-list" class="material-selectable-list">
+              <!-- Injected dynamically via JS -->
+            </ul>
+          </div>
+
+          <!-- Material Detail View -->
+          <div class="glass-card material-detail-card" id="material-detail-view">
+            <!-- Injected dynamically via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: RMR Bieniawski (Versionado 1973, 1976, 1989, 2014) -->
+      <section id="tab-rmr-calculator" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2 data-i18n="rmr_title">Calculadora de Clasificación RMR (Rock Mass Rating)</h2>
+            <p class="subtitle" data-i18n="rmr_subtitle">Selección dinámica de versión metodológica con recalibración instantánea de tablas de ponderación.</p>
+          </div>
+          <div class="version-selector-container">
+            <label for="rmr-version-select">Versión RMR:</label>
+            <select id="rmr-version-select" class="version-select">
+              <option value="rmr89" selected>Bieniawski 1989 (RMR89 - Estándar)</option>
+              <option value="rmr76">Bieniawski 1976 (RMR76)</option>
+              <option value="rmr73">Bieniawski 1973 (RMR73 Histórico)</option>
+              <option value="rmr14">Celada et al. 2014 (RMR14 Actualizado)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-layout-calculator">
+          <!-- RMR Input Parameters -->
+          <div class="glass-card calculator-inputs-card">
+            <h3 class="card-title">Parámetros de Entrada <span id="active-rmr-tag" class="pill-tag">RMR 1989</span></h3>
+            
+            <form id="rmr-form" class="calc-form">
+              <!-- Parameter 1: Rock Strength (UCS / PLT) -->
+              <div class="form-group">
+                <label>1. Resistencia de Roca Intacta (UCS / Carga Puntual)</label>
+                <div class="input-with-select">
+                  <select id="rmr-p1-select">
+                    <!-- Dynamically populated based on version -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Parameter 2: RQD -->
+              <div class="form-group">
+                <label>2. Calidad de Roca RQD (%): <span id="rmr-rqd-val" class="highlight-val">75%</span></label>
+                <input type="range" id="rmr-p2-rqd" min="0" max="100" value="75">
+                <div class="range-labels"><span>0% (Muy Mala)</span><span>50%</span><span>100% (Excelente)</span></div>
+              </div>
+
+              <!-- Parameter 3: Spacing -->
+              <div class="form-group">
+                <label>3. Espaciamiento de Discontinuidades</label>
+                <select id="rmr-p3-select">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Parameter 4: Discontinuity Condition -->
+              <div class="form-group">
+                <label>4. Condición de las Discontinuidades</label>
+                <select id="rmr-p4-select">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Parameter 5: Groundwater -->
+              <div class="form-group">
+                <label>5. Agua Subterránea (Condiciones Hidrogeológicas)</label>
+                <select id="rmr-p5-select">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Parameter 6: Orientation Correction -->
+              <div class="form-group">
+                <label>6. Corrección por Orientación de la Obra (Túneles / Cimentaciones / Taludes)</label>
+                <select id="rmr-p6-select">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+            </form>
+          </div>
+
+          <!-- RMR Calculation Results & Tunnel Support -->
+          <div class="glass-card calculator-results-card">
+            <h3 class="card-title">Resultado RMR & Clasificación del Macizo</h3>
+            
+            <div class="score-display">
+              <div class="main-score">
+                <span class="score-label">RMR Total</span>
+                <span class="score-value" id="rmr-total-score">68</span>
+                <span class="score-unit">/ 100</span>
+              </div>
+              <div class="rock-class-badge" id="rmr-class-badge">
+                Clase II: Roca Buena
+              </div>
+            </div>
+
+            <!-- Detailed Breakdowns -->
+            <div class="breakdown-table-wrapper">
+              <table class="breakdown-table">
+                <thead>
+                  <tr><th>Parámetro</th><th>Valor Selección</th><th>Puntuación</th></tr>
+                </thead>
+                <tbody id="rmr-breakdown-body">
+                  <!-- Dynamically generated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Geomechanical Parameters -->
+            <div class="geomech-estimates">
+              <h4>Estimaciones Geomecánicas Derivadas</h4>
+              <div class="estimates-grid">
+                <div class="estimate-item">
+                  <span class="est-label">Cohesión del Macizo ($c$):</span>
+                  <span class="est-val" id="est-cohesion">300 - 400 kPa</span>
+                </div>
+                <div class="estimate-item">
+                  <span class="est-label">Ángulo de Fricción ($\phi$):</span>
+                  <span class="est-val" id="est-friction">35° - 45°</span>
+                </div>
+                <div class="estimate-item">
+                  <span class="est-label">Tiempo de Autosoporte:</span>
+                  <span class="est-val" id="est-standuptime">1 año para 10 m luz</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Tunnel Support -->
+            <div class="tunnel-support-container">
+              <h4>Recomendación de Soporte en Túneles (<span id="support-author-ref">Bieniawski 1989</span>)</h4>
+              <div id="tunnel-support-text" class="support-text-box">
+                <!-- Dynamically generated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Q-System Barton (1974 / 2002) -->
+      <section id="tab-q-system" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2 data-i18n="q_title">Clasificación Q-System de Barton et al.</h2>
+            <p class="subtitle" data-i18n="q_subtitle">Evaluación de los 6 parámetros del índice Q ($RQD, J_n, J_r, J_a, J_w, SRF$) y dimensionamiento de soporte.</p>
+          </div>
+          <div class="version-selector-container">
+            <label for="q-version-select">Versión Q-System:</label>
+            <select id="q-version-select" class="version-select">
+              <option value="q02" selected>Barton 2002 (Q Actualizado & Q_c)</option>
+              <option value="q74">Barton, Lien & Lunde 1974 (Original)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-layout-calculator">
+          <!-- Q-System Inputs -->
+          <div class="glass-card calculator-inputs-card">
+            <h3 class="card-title">Parámetros del Sistema Q</h3>
+            
+            <form id="q-form" class="calc-form">
+              <!-- RQD / Jn -->
+              <div class="form-section-title">Bloque 1: Tamaño de los Bloques ($RQD / J_n$)</div>
+              <div class="form-group">
+                <label>RQD (%): <span id="q-rqd-display" class="highlight-val">80%</span></label>
+                <input type="range" id="q-input-rqd" min="10" max="100" value="80">
+              </div>
+              <div class="form-group">
+                <label>$J_n$ - Índice de Familias de Juntas:</label>
+                <select id="q-select-jn"></select>
+              </div>
+
+              <!-- Jr / Ja -->
+              <div class="form-section-title">Bloque 2: Resistencia al Corte de Juntas ($J_r / J_a$)</div>
+              <div class="form-group">
+                <label>$J_r$ - Rugosidad de Juntas:</label>
+                <select id="q-select-jr"></select>
+              </div>
+              <div class="form-group">
+                <label>$J_a$ - Alteración de Juntas:</label>
+                <select id="q-select-ja"></select>
+              </div>
+
+              <!-- Jw / SRF -->
+              <div class="form-section-title">Bloque 3: Tensiones y Agua ($J_w / SRF$)</div>
+              <div class="form-group">
+                <label>$J_w$ - Factor de Agua en Juntas:</label>
+                <select id="q-select-jw"></select>
+              </div>
+              <div class="form-group">
+                <label>$SRF$ - Factor de Reducción por Tensiones:</label>
+                <select id="q-select-srf"></select>
+              </div>
+
+              <!-- Optional Excavation Category (ESR) -->
+              <div class="form-group">
+                <label>Relación de Soporte de Excavación ($ESR$):</label>
+                <select id="q-select-esr">
+                  <option value="1.6" selected>Túneles de minería permanente, acueductos (ESR = 1.6)</option>
+                  <option value="1.0">Túneles carreteros y ferroviarios principales (ESR = 1.0)</option>
+                  <option value="1.3">Excavaciones mineras temporales (ESR = 1.3)</option>
+                  <option value="0.8">Centrales subterráneas, estaciones de metro (ESR = 0.8)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Luz o Altura de la Excavación ($D$, metros):</label>
+                <input type="number" id="q-input-span" value="10" step="0.5" min="1" max="50">
+              </div>
+            </form>
+          </div>
+
+          <!-- Q-System Results Right Column -->
+          <div class="calculator-results-column">
+            <!-- Card 1: Resultado Índice Q & Gráfico de Soporte -->
+            <div class="glass-card calculator-results-card">
+              <h3 class="card-title">Resultado Índice Q & Gráfico de Soporte</h3>
+
+              <div class="q-score-wrapper">
+                <div class="q-score-box">
+                  <span class="score-label">Índice Q de Barton</span>
+                  <span class="score-value" id="q-calculated-value">12.5</span>
+                  <span class="q-quality-desc" id="q-quality-desc">Roca Buena</span>
+                </div>
+                <div class="q-quotients">
+                  <div class="quotient-item">
+                    <span class="q-title">Tamaño Bloques</span>
+                    <span class="q-formula">$RQD / J_n$</span>
+                    <span class="q-val" id="q-block-size">8.89</span>
+                  </div>
+                  <div class="quotient-item">
+                    <span class="q-title">Fricción Juntas</span>
+                    <span class="q-formula">$J_r / J_a$</span>
+                    <span class="q-val" id="q-joint-friction">3.00</span>
+                  </div>
+                  <div class="quotient-item">
+                    <span class="q-title">Tensión / Agua</span>
+                    <span class="q-formula">$J_w / SRF$</span>
+                    <span class="q-val" id="q-stress-water">0.47</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dim-eq-box">
+                <span>Dimensión Equivalente ($D_e = \text{Luz} / ESR$): </span>
+                <strong id="q-de-val" class="highlight-val">6.25 m</strong>
+              </div>
+
+              <!-- Q Support Chart Canvas -->
+              <div class="canvas-container">
+                <h4>Carta de Soporte Geotécnico de Barton (1993):</h4>
+                <canvas id="q-support-canvas" width="550" height="320"></canvas>
+              </div>
+
+              <!-- Barton Support Zone Card (Positioned below the canvas chart) -->
+              <div id="q-barton-zone-card" class="barton-zone-card">
+                <!-- Dynamically populated via JS -->
+              </div>
+            </div>
+
+            <!-- Card 2: MÓDULO DE SOSTENIMIENTO PROPUESTO / DISEÑO PRELIMINAR EJECUTIVO -->
+            <div id="q-proposed-support-module" class="proposed-support-module glass-card">
+              <div class="module-header">
+                <div class="header-left">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-lime)" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  <h3>Módulo de Sostenimiento Propuesto (Diseño Preliminar)</h3>
+                </div>
+                <span class="executive-badge">Parámetros Ejecutables de Ingeniería</span>
+              </div>
+
+              <!-- 1. Cuadro Síntesis de Diseño Ejecutivo (Blueprint Style Card) -->
+              <div class="support-executive-blueprint">
+                <div class="blueprint-title-bar">
+                  <span>SOSTENIMIENTO RECOMENDADO PRELIMINAR</span>
+                  <span id="blueprint-zone-tag" class="blueprint-tag">Zona Z6</span>
+                </div>
+                <div class="blueprint-body">
+                  <div class="blueprint-row">
+                    <div class="blueprint-cell label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      Shotcrete / Concreto Lanzado:
+                    </div>
+                    <div class="blueprint-cell val" id="bp-shotcrete-val">Shotcrete 9-12 cm (Con fibra)</div>
+                  </div>
+                  <div class="blueprint-row">
+                    <div class="blueprint-cell label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><line x1="17" y1="5" x2="7" y2="19"/></svg>
+                      Pernos de Roca:
+                    </div>
+                    <div class="blueprint-cell val" id="bp-bolts-val">L = 5.0 m (Calc: 4.67 m) | Ø25 mm | 1.5 x 1.5 m | Barra Helicoidal</div>
+                  </div>
+                  <div class="blueprint-row">
+                    <div class="blueprint-cell label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                      Malla Metálica:
+                    </div>
+                    <div class="blueprint-cell val" id="bp-mesh-val">Opcional (Electrosoldada 6x6 W2.9/W2.9)</div>
+                  </div>
+                  <div class="blueprint-row">
+                    <div class="blueprint-cell label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22V4c0-.5.5-1 1-1h14c.5 0 1 .5 1 1v18M2 22h20M7 8h10M7 13h10"/></svg>
+                      Cerchas / Costillas:
+                    </div>
+                    <div class="blueprint-cell val" id="bp-girders-val">No requerido</div>
+                  </div>
+                </div>
+                <div class="blueprint-footer">
+                  <span>Fuente: Grimstad & Barton (1993) / NGI Q-Support Chart</span>
+                </div>
+              </div>
+
+              <!-- 2. Grid de Configuración Paramétrica Interactiva -->
+              <div class="support-params-grid">
+                
+                <!-- TARJETA 1: PERNOS DE ROCA -->
+                <div class="param-card">
+                  <div class="param-card-header">
+                    <div class="header-icon green">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="22"/><line x1="17" y1="5" x2="7" y2="19"/></svg>
+                    </div>
+                    <h4>1. Pernos de Roca</h4>
+                  </div>
+                  <div class="param-card-body">
+                    
+                    <!-- Fórmula de Longitud Barton -->
+                    <div class="formula-box">
+                      <span class="formula-label">Fórmula Barton (1993):</span>
+                      <code class="formula-code">L = (2 + 0.15 × Span) / ESR</code>
+                      <div class="calc-vs-adopt">
+                        <div class="calc-item">
+                          <span class="sub-label">Longitud calculada:</span>
+                          <span id="bolt-calc-length-val" class="highlight-code">4.67 m</span>
+                        </div>
+                        <div class="calc-item">
+                          <span class="sub-label">Longitud adoptada (Obra):</span>
+                          <div class="input-inline">
+                            <input type="number" id="bolt-adopted-length-input" value="5.0" step="0.5" min="1.0" max="15.0">
+                            <span class="unit">m</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Parámetros del perno -->
+                    <div class="param-inputs-subgrid">
+                      <div class="sub-input-group">
+                        <label for="bolt-type-select">Tipo de Perno:</label>
+                        <select id="bolt-type-select">
+                          <option value="Barra Helicoidal" selected>Barra Helicoidal (Resina / Cemento)</option>
+                          <option value="Split Set">Split Set (Fricción)</option>
+                          <option value="Swellex">Swellex (Expansivo Hidroneumático)</option>
+                          <option value="Cable Bolt">Cable Bolt (Anclaje pasivo/activo)</option>
+                          <option value="Pernos Cementados">Pernos Cementados (Mortero)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="bolt-diameter-select">Diámetro del Perno:</label>
+                        <select id="bolt-diameter-select">
+                          <option value="22 mm">22 mm (7/8")</option>
+                          <option value="25 mm" selected>25 mm (1") - Estándar</option>
+                          <option value="32 mm">32 mm (1-1/4") - Pesado</option>
+                          <option value="15.2 mm (Cable)">15.2 mm (Cable de acero)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="bolt-spacing-input">Espaciamiento ($S \times S$):</label>
+                        <input type="text" id="bolt-spacing-input" value="1.5 m x 1.5 m">
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="bolt-pattern-select">Patrón de Instalación:</label>
+                        <select id="bolt-pattern-select">
+                          <option value="Cuadrícula" selected>Cuadrícula (Grid)</option>
+                          <option value="Traba">Traba (Staggered)</option>
+                          <option value="Puntual">Puntual (Spotting)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group full-span">
+                        <label for="bolt-location-select">Ubicación de Aplicación:</label>
+                        <select id="bolt-location-select">
+                          <option value="Techo + Hastiales" selected>Techo + Hastiales (Bóveda completa)</option>
+                          <option value="Solo Techo">Solo Techo (Clave)</option>
+                          <option value="Techo, Hastiales y Frente">Techo, Hastiales y Frente de avance</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- TARJETA 2: SHOTCRETE / CONCRETO LANZADO -->
+                <div class="param-card">
+                  <div class="param-card-header">
+                    <div class="header-icon ochre">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h4>2. Shotcrete / Concreto Lanzado</h4>
+                  </div>
+                  <div class="param-card-body">
+                    
+                    <div class="param-inputs-subgrid">
+                      <div class="sub-input-group">
+                        <label for="shotcrete-thickness-input">Espesor de Shotcrete:</label>
+                        <input type="text" id="shotcrete-thickness-input" value="9-12 cm">
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="shotcrete-type-select">Tipo de Concreto Lanzado:</label>
+                        <select id="shotcrete-type-select">
+                          <option value="Con fibra" selected>Con fibra (Shotcrete reforzado SfrS)</option>
+                          <option value="Sin fibra">Sin fibra (Convencional)</option>
+                          <option value="Vía Húmeda">Vía Húmeda (Wet mix)</option>
+                          <option value="Vía Seca">Vía Seca (Dry mix)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="shotcrete-fiber-select">Tipo de Fibra de Refuerzo:</label>
+                        <select id="shotcrete-fiber-select">
+                          <option value="Acero (35-45 kg/m³)" selected>Acero (35 - 45 kg/m³)</option>
+                          <option value="Sintética (5-7 kg/m³)">Sintética Macro (5 - 7 kg/m³)</option>
+                          <option value="Ninguna">Ninguna</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="shotcrete-strength-select">Resistencia Compresión ($f'_c$):</label>
+                        <select id="shotcrete-strength-select">
+                          <option value="25 MPa">25 MPa @ 28 días</option>
+                          <option value="30 MPa" selected>30 MPa @ 28 días (Estándar)</option>
+                          <option value="35 MPa">35 MPa @ 28 días (Estructural)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group full-span">
+                        <label for="shotcrete-application-input">Etapas de Aplicación:</label>
+                        <input type="text" id="shotcrete-application-input" value="1ª Capa (4-5 cm) sellado + 2ª Capa definitiva (hasta 12 cm)">
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- TARJETA 3: MALLA METÁLICA -->
+                <div class="param-card">
+                  <div class="param-card-header">
+                    <div class="header-icon cyan">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                    </div>
+                    <h4>3. Malla Metálica</h4>
+                  </div>
+                  <div class="param-card-body">
+                    <div class="param-inputs-subgrid">
+                      <div class="sub-input-group">
+                        <label for="mesh-required-select">Requerimiento de Malla:</label>
+                        <select id="mesh-required-select">
+                          <option value="Opcional" selected>Opcional (Si el macizo está fracturado)</option>
+                          <option value="Sí">Sí (Requerido)</option>
+                          <option value="No">No (Sustituida por Fibra)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="mesh-type-select">Tipo de Malla:</label>
+                        <select id="mesh-type-select">
+                          <option value="Electrosoldada 6x6 W2.9/W2.9" selected>Electrosoldada 6x6 W2.9/W2.9 (C-139)</option>
+                          <option value="Electrosoldada Q-188">Electrosoldada Q-188 Pesada</option>
+                          <option value="Eslabonada Triple Torsión">Eslabonada Triple Torsión (Tejida)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group full-span">
+                        <label for="mesh-location-input">Ubicación:</label>
+                        <input type="text" id="mesh-location-input" value="Techo y paredes">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TARJETA 4: CERCHAS / COSTILLAS METÁLICAS -->
+                <div class="param-card">
+                  <div class="param-card-header">
+                    <div class="header-icon purple">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 22V4c0-.5.5-1 1-1h14c.5 0 1 .5 1 1v18M2 22h20M7 8h10M7 13h10"/></svg>
+                    </div>
+                    <h4>4. Elementos Estructurales Pesados (Cerchas)</h4>
+                  </div>
+                  <div class="param-card-body">
+                    <div class="param-inputs-subgrid">
+                      <div class="sub-input-group">
+                        <label for="girders-required-select">Cerchas / Arcos Metálicos:</label>
+                        <select id="girders-required-select">
+                          <option value="No requerido" selected>No requerido</option>
+                          <option value="Cerchas TH">Cerchas TH (Toussaint-Heintzmann)</option>
+                          <option value="HEB">Perfil Metálico HEB</option>
+                          <option value="Perfil Metálico IPE">Perfil Metálico IPE</option>
+                          <option value="Arcos Reticulados">Arcos Reticulados (Lattice Girders)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group">
+                        <label for="girders-spacing-select">Espaciamiento entre Cerchas:</label>
+                        <select id="girders-spacing-select">
+                          <option value="N/A" selected>N/A (No requerido)</option>
+                          <option value="1.5 m">1.5 m</option>
+                          <option value="1.0 m">1.0 m</option>
+                          <option value="0.75 m">0.75 m (Zonas de falla)</option>
+                        </select>
+                      </div>
+
+                      <div class="sub-input-group full-span">
+                        <label for="girders-profile-input">Perfil / Detalle Estructural:</label>
+                        <input type="text" id="girders-profile-input" value="Ninguno">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- 3. BANNER DE NIVEL DE DISEÑO & EXPLICACIÓN CONSTRUCTIVA -->
+              <div class="design-level-banner">
+                <div class="banner-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-ochre)" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <h4>Nivel de Diseño Geotécnico: Recomendación Empírica vs Diseño Definitivo</h4>
+                </div>
+                <div class="banner-grid">
+                  <div class="banner-box empirical">
+                    <h5>Recomendación Empírica (Q-System Barton 1993 / NGI 2015)</h5>
+                    <p>Proporciona la categoría de sostenimiento primario basada en correlaciones empíricas globales de tunelería. Es válido para fases de <strong>Estudio de Perfil, Prefactibilidad y Diseño Preliminar de Obra</strong>.</p>
+                  </div>
+                  <div class="banner-box definitive">
+                    <h5>Requerimientos para Diseño Definitivo de Ingeniería</h5>
+                    <p>Para la validación definitiva y ejecución en obra se debe realizar:</p>
+                    <ul>
+                      <li>• Medición de estado de esfuerzos <i>in-situ</i> (&sigma;<sub>1</sub>, &sigma;<sub>3</sub>, K<sub>0</sub>).</li>
+                      <li>• Modelamiento numérico 2D/3D (FEM, FDM - Phase2, FLAC, 3DEC).</li>
+                      <li>• Análisis de cuñas estructurales (UNWEDGE) y fallas.</li>
+                      <li>• Monitoreo instrumental continuo en tiempo real (Método Observacional / NATM).</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. NARRATIVA EXPLICATIVA CONSTRUCTIVA -->
+              <div class="constructive-meaning-box">
+                <div class="meaning-header">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <h4 id="constructive-meaning-title">¿Qué significa constructivamente la Zona Z6?</h4>
+                </div>
+                <p id="constructive-meaning-text" class="meaning-text">
+                  Loading...
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: Hoek-Brown (1980, 1988, 1995, 2002, 2018) & Matriz GSI -->
+      <section id="tab-hoek-brown" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2 data-i18n="hb_title">Criterio No Lineal Hoek-Brown & Matriz GSI</h2>
+            <p class="subtitle" data-i18n="hb_subtitle">Evolución de parámetros no lineales ($m_b, s, a$), envolvente de rotura y estimación interactiva de GSI.</p>
+          </div>
+          <div class="version-selector-container">
+            <label for="hb-version-select">Versión Hoek-Brown:</label>
+            <select id="hb-version-select" class="version-select">
+              <option value="hb02" selected>Hoek, Carranza-Torres & Corkum 2002 (Estándar)</option>
+              <option value="hb18">Hoek & Brown 2018 (Actualización macizos alterados)</option>
+              <option value="hb95">Hoek, Kaiser & Bawden 1995</option>
+              <option value="hb80">Hoek & Brown 1980 (Original)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-layout-calculator">
+          <!-- Hoek-Brown Inputs -->
+          <div class="glass-card calculator-inputs-card">
+            <h3 class="card-title">Parámetros Entrada Hoek-Brown</h3>
+            
+            <form id="hb-form" class="calc-form">
+              <!-- 1. Resistencia Roca Intacta sig_ci -->
+              <div class="form-group">
+                <label>1. Resistencia Roca Intacta $\sigma_{ci}$ (MPa):</label>
+                <input type="number" id="hb-sigci" value="80" step="5" min="1" max="400">
+                <div class="source-chips-group">
+                  <span class="chips-label">Fuente:</span>
+                  <button type="button" class="chip-btn active" data-source-sigci="ucs">Ensayo UCS</button>
+                  <button type="button" class="chip-btn" data-source-sigci="lab">Laboratorio</button>
+                  <button type="button" class="chip-btn" data-source-sigci="field">Estimación de campo</button>
+                </div>
+              </div>
+
+              <!-- 2. Constante mi -->
+              <div class="form-group">
+                <label>2. Constante $m_i$:</label>
+                <div class="input-with-hint">
+                  <input type="number" id="hb-mi" value="15" step="1" min="1" max="45">
+                </div>
+                <div class="source-chips-group">
+                  <span class="chips-label">Referencia:</span>
+                  <button type="button" class="chip-btn active" data-ref-mi="hoek">Hoek et al.</button>
+                  <button type="button" class="chip-btn" data-ref-mi="marinos">Marinos & Hoek</button>
+                  <button type="button" class="chip-btn" data-ref-mi="triaxial">Ensayos triaxiales</button>
+                </div>
+              </div>
+
+              <!-- 3. Índice GSI -->
+              <div class="form-group">
+                <label>3. Índice GSI: <span id="hb-gsi-display" class="highlight-val">55</span></label>
+                <input type="range" id="hb-gsi-slider" min="0" max="100" value="55">
+                <div class="source-chips-group">
+                  <span class="chips-label">Fuente:</span>
+                  <button type="button" class="chip-btn active" data-source-gsi="field">Evaluación de campo</button>
+                  <button type="button" class="chip-btn" data-source-gsi="mapping">Mapeo geomecánico</button>
+                  <button type="button" class="chip-btn" data-source-gsi="matrix">Tabla GSI</button>
+                </div>
+              </div>
+
+              <!-- 4. Factor Perturbación D -->
+              <div class="form-group">
+                <label>4. Factor de Perturbación ($D$): <span id="hb-d-display" class="highlight-val">0.6</span></label>
+                <input type="range" id="hb-d-slider" min="0" max="1" step="0.05" value="0.6">
+                <div class="source-chips-group">
+                  <span class="chips-label">Según:</span>
+                  <button type="button" class="chip-btn" data-source-d="tbm">Excavación mecánica</button>
+                  <button type="button" class="chip-btn active" data-source-d="blast">Voladura</button>
+                  <button type="button" class="chip-btn" data-source-d="contour">Calidad del contorno</button>
+                </div>
+              </div>
+            </form>
+
+            <!-- GSI Interactive Matrix Picker Trigger -->
+            <div class="gsi-matrix-box">
+              <button id="open-gsi-matrix-btn" class="secondary-action-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                Abrir Matriz Cualitativa GSI (Hoek & Marinos)
+              </button>
+            </div>
+          </div>
+
+          <!-- Hoek-Brown Results & Envelope Curve -->
+          <div class="glass-card calculator-results-card">
+            <h3 class="card-title">Parámetros Calculados del Macizo Rocoso</h3>
+
+            <!-- Hoek-Brown Parameters Grid -->
+            <div class="hb-params-grid">
+              <div class="hb-param-card">
+                <span class="param-title">Constante $m_b$</span>
+                <span class="param-val" id="hb-res-mb">1.51</span>
+              </div>
+              <div class="hb-param-card">
+                <span class="param-title">Constante $s$</span>
+                <span class="param-val" id="hb-res-s">0.0019</span>
+              </div>
+              <div class="hb-param-card">
+                <span class="param-title">Exponente $a$</span>
+                <span class="param-val" id="hb-res-a">0.504</span>
+              </div>
+              <div class="hb-param-card highlight-card">
+                <span class="param-title">Resistencia a Compresión Global $\sigma_{cm}$</span>
+                <span class="param-val" id="hb-res-sigcm">11.8 MPa</span>
+              </div>
+              <div class="hb-param-card highlight-card">
+                <span class="param-title">Módulo de Deformación $E_m$</span>
+                <span class="param-val" id="hb-res-em">12,185 MPa</span>
+              </div>
+            </div>
+
+            <!-- Conversión Equivalente Mohr-Coulomb Card -->
+            <div class="mc-equivalent-card">
+              <h4 class="mc-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D48245" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/></svg>
+                Conversión Equivalente Mohr-Coulomb
+              </h4>
+              <div class="mc-params-row">
+                <div class="mc-param-item">
+                  <span class="mc-label">Cohesión equivalente ($c$):</span>
+                  <strong class="mc-value" id="hb-res-cohesion">1.85 MPa (1850 kPa)</strong>
+                </div>
+                <div class="mc-param-item">
+                  <span class="mc-label">Ángulo de fricción ($\phi$):</span>
+                  <strong class="mc-value" id="hb-res-friction">34.2°</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Envelope Graph Canvas & Mode Selector -->
+            <div class="canvas-container">
+              <div class="chart-header-actions">
+                <h4>Visualización Gráfica de Envolventes</h4>
+                <div class="chart-mode-toggle">
+                  <button type="button" class="mode-pill-btn active" id="hb-mode-mohr">Plano Mohr (τ vs σ + Círculos)</button>
+                  <button type="button" class="mode-pill-btn" id="hb-mode-principal">Plano Principal (σ1 vs σ3)</button>
+                </div>
+              </div>
+              <canvas id="hb-envelope-canvas" width="550" height="280"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: Estándares ISRM (Blue Book & Orange Book) -->
+      <section id="tab-isrm-standards" class="tab-panel">
+        <div class="panel-header">
+          <div>
+            <h2 data-i18n="isrm_title">Métodos Sugeridos ISRM (International Society for Rock Mechanics)</h2>
+            <p class="subtitle" data-i18n="isrm_subtitle">Compendio normativo para ensayos de laboratorio y descripción geomecánica de discontinuidades.</p>
+          </div>
+          <div class="book-filter">
+            <button class="filter-pill active" data-book="all">Todos los Libros</button>
+            <button class="filter-pill" data-book="blue">Blue Book (1974 - 2006)</button>
+            <button class="filter-pill" data-book="orange">Orange Book (2007 - 2014)</button>
+          </div>
+        </div>
+
+        <div class="isrm-cards-grid" id="isrm-methods-grid">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span><strong>Lithica GeoTech</strong> &copy; 2026 — Familia de Aplicaciones Científicas Lithica</span>
+      </div>
+      <div class="footer-right">
+        <span>Motor de Conocimiento Versionado & Trazabilidad Geotécnica</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- GSI Interactive Matrix Modal -->
+  <div id="gsi-modal" class="modal-overlay">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h3>Matriz Cualitativa GSI (Hoek & Marinos 2000)</h3>
+        <button id="close-gsi-modal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-instruction">Haz clic en la celda que mejor describa la estructura geológica y la condición de la superficie de las discontinuidades:</p>
+        <div class="gsi-interactive-table-wrapper">
+          <table class="gsi-matrix-table" id="gsi-matrix-table">
+            <!-- Dynamically generated matrix -->
+          </table>
+        </div>
+      </div>
+    </div>
+  <!-- Settings Modal (Matching Lithica Atlas Settings Page) -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-content glass-card settings-modal-content">
+      
+      <div class="modal-header">
+        <div class="settings-header-banner">
+          <div class="settings-header-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div class="settings-header-titles">
+            <h3 data-i18n="settings_title">Configuraciones</h3>
+            <p data-i18n="settings_subtitle">Personaliza la interfaz, escala y preferencias globales de Lithica GeoTech</p>
+          </div>
+        </div>
+        <button id="close-settings-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <div class="settings-cards-grid">
+        <!-- 1. Language Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="lang_card_title">Idioma de la Interfaz</h4>
+              <p data-i18n="lang_card_subtitle">Selecciona el idioma de visualización de la plataforma</p>
+            </div>
+          </div>
+          <div class="segmented-group">
+            <button class="segmented-btn lang-seg-btn active" data-lang-val="es">
+              Español
+            </button>
+            <button class="segmented-btn lang-seg-btn" data-lang-val="en">
+              English
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Theme Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="theme_card_title">Tema Visual</h4>
+              <p data-i18n="theme_card_subtitle">Elige la apariencia visual o sincroniza con la preferencia del sistema operativo</p>
+            </div>
+          </div>
+          <div class="segmented-group">
+            <button class="segmented-btn theme-seg-btn active" data-theme-val="system">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span data-i18n="theme_system">Sistema (Auto)</span>
+            </button>
+            <button class="segmented-btn theme-seg-btn" data-theme-val="light">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+              <span data-i18n="theme_light">Modo Claro</span>
+            </button>
+            <button class="segmented-btn theme-seg-btn" data-theme-val="dark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <span data-i18n="theme_dark">Modo Oscuro</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. GUI Scale Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 7 4"/><line x1="4" y1="4" x2="10" y2="10"/><polyline points="20 7 20 4 17 4"/><line x1="20" y1="4" x2="14" y2="10"/><polyline points="4 17 4 20 7 20"/><line x1="4" y1="20" x2="10" y2="14"/><polyline points="20 17 20 20 17 20"/><line x1="20" y1="20" x2="14" y2="14"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="scale_card_title">Escala de la Interfaz (GUI)</h4>
+              <p data-i18n="scale_card_subtitle">Ajusta el tamaño global de los elementos y tipografías</p>
+            </div>
+          </div>
+          <div class="scale-controls-wrapper">
+            <div class="scale-top-info">
+              <span id="gui-scale-value-display" class="scale-val-display">100%</span>
+              <button id="reset-scale-btn" class="btn-reset-scale">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span data-i18n="scale_reset">Restablecer Escala</span>
+              </button>
+            </div>
+            <input type="range" id="gui-scale-slider" class="gui-slider" min="0.8" max="1.4" step="0.1" value="1.0">
+          </div>
+        </div>
+
+        <!-- 4. Knowledge Base Info Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="kb_card_title">Base de Conocimiento</h4>
+              <p data-i18n="kb_card_subtitle">Estado del motor dinámico geotécnico y fuentes bibliográficas</p>
+            </div>
+          </div>
+          <div class="chips-row">
+            <span class="chip-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span data-i18n="kb_status_ready">Cargada & Operativa</span>
+            </span>
+            <span class="chip-badge">Litologías: 6</span>
+            <span class="chip-badge">Libros ISRM: Blue & Orange</span>
+          </div>
+        </div>
+
+        <!-- 5. Support Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="support_card_title">Apoya el Desarrollo</h4>
+              <p data-i18n="support_card_subtitle">Lithica GeoTech es parte de la suite abierta de herramientas geocientíficas</p>
+            </div>
+          </div>
+          <div>
+            <a href="https://ko-fi.com/O8I721TAM6" target="_blank" rel="noopener noreferrer" class="btn-action-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+              <span data-i18n="support_btn">Invítanos un Café en Ko-Fi</span>
+            </a>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-dim);" data-i18n="support_footnote">Tu contribución ayuda a financiar la investigación geotécnica y el desarrollo continuado.</p>
+        </div>
+
+        <!-- 6. Contact & About Card -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="settings-card-titles">
+              <h4 data-i18n="about_card_title">Acerca de Lithica GeoTech</h4>
+              <p data-i18n="about_card_subtitle">Información del sistema y créditos científicos</p>
+            </div>
+          </div>
+          <div style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div><strong data-i18n="about_version">Versión de la Plataforma</strong>: v1.0 (2026)</div>
+            <div><strong data-i18n="about_developer">Desarrollador</strong>: <span data-i18n="about_dev_name">Jordan Zavaleta · GisGeo Dev</span></div>
+          </div>
+          <div class="chips-row" style="margin-top: 10px;">
+            <button id="open-attributions-btn" class="btn-action-primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span data-i18n="about_attributions_btn">Atribuciones Científicas e ISRM</span>
+            </button>
+            <a href="mailto:jordanzav@gisgeo.dev" class="btn-action-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span data-i18n="contact_email_btn">Enviar Correo Electrónico</span>
+            </a>
+            <a href="https://gisgeo.dev" target="_blank" rel="noopener noreferrer" class="btn-action-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              <span data-i18n="contact_web_btn">Visitar Sitio Web</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal de Atribuciones Científicas e ISRM -->
+  <div id="attributions-modal" class="modal-overlay">
+    <div class="modal-content glass-card" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>📖 Atribuciones Científicas & Créditos Bibliográficos</h3>
+        <button id="close-attributions-modal" class="btn-icon-close">&times;</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+        <p>Lithica GeoTech integra las metodologías geotécnicas y ecuaciones empíricas estándar de las siguientes fuentes científicas de referencia:</p>
+        
+        <div style="background: rgba(11, 34, 56, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(64, 112, 128, 0.3);">
+          <strong style="color: var(--color-lime);">ISRM (International Society for Rock Mechanics and Rock Engineering)</strong> (1981, 2007, 2014)
+          <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 2px;">Suggested Methods for Rock Characterization, Testing and Monitoring (Blue, Orange & Gold Books)</div>
+        </div>
+
+        <div style="background: rgba(11, 34, 56, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(64, 112, 128, 0.3);">
+          <strong style="color: var(--color-lime);">Bieniawski, Z. T.</strong> (1989)
+          <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 2px;">Engineering Rock Mass Classifications: Rock Mass Rating (RMR) System & Design Rules</div>
+        </div>
+
+        <div style="background: rgba(11, 34, 56, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(64, 112, 128, 0.3);">
+          <strong style="color: var(--color-lime);">Barton, N., Lien, R. & Lunde, J. / Barton, N.</strong> (1974, 2002, 2015)
+          <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 2px;">NGI Rock Mass Quality Q-System & Underground Excavation Support Charts</div>
+        </div>
+
+        <div style="background: rgba(11, 34, 56, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(64, 112, 128, 0.3);">
+          <strong style="color: var(--color-lime);">Hoek, E., Carranza-Torres, C. & Corkum, B. / Hoek, E. & Brown, E. T.</strong> (2002, 2018)
+          <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 2px;">Hoek-Brown Failure Criterion & RocScience Mohr-Coulomb Equivalent Formulations</div>
+        </div>
+
+        <div style="background: rgba(11, 34, 56, 0.6); padding: 12px; border-radius: 10px; border: 1px solid rgba(64, 112, 128, 0.3);">
+          <strong style="color: var(--color-lime);">Marinos, P. & Hoek, E.</strong> (2000)
+          <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 2px;">Geological Strength Index (GSI) Charts for Jointed & Weak Rock Masses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

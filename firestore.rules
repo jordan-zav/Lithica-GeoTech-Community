@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /allowed_users/{email} {
+      function isOwner() {
+        return request.auth != null
+          && request.auth.token.email != null
+          && request.auth.token.email.lower() == email;
+      }
+
+      function clientFieldsOnly() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'appVersion',
+          'buildNumber',
+          'platform',
+          'lastSeenAt',
+          'sessionCount',
+          'activeDay'
+        ]);
+      }
+
+      allow read: if isOwner();
+
+      allow create: if isOwner()
+        && request.resource.data.keys().hasOnly([
+          'email',
+          'uid',
+          'enabled',
+          'role',
+          'createdAt',
+          'appVersion',
+          'buildNumber',
+          'platform',
+          'lastSeenAt',
+          'sessionCount',
+          'activeDay'
+        ])
+        && request.resource.data.email == email
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.enabled == true
+        && request.resource.data.role == 'tester';
+
+      allow update: if isOwner()
+        && resource.data.enabled == true
+        && request.resource.data.enabled == resource.data.enabled
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.uid == resource.data.uid
+        && clientFieldsOnly();
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
