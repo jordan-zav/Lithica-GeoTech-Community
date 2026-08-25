@@ -97,6 +97,52 @@ class _TopographicBackgroundPainter extends CustomPainter {
       phase: 0.45,
       count: 12,
     );
+    _drawContourFamily(
+      canvas,
+      size,
+      linePaint..color = linePaint.color.withValues(alpha: dark ? 0.07 : 0.05),
+      center: Offset(size.width * 0.94, size.height * 0.82),
+      maxRadius: size.shortestSide * 0.5,
+      stretch: 1.7,
+      phase: 2.1,
+      count: 10,
+    );
+    _drawCommunityNetwork(canvas, size);
+  }
+
+  void _drawCommunityNetwork(Canvas canvas, Size size) {
+    const normalized = [
+      Offset(0.12, 0.73),
+      Offset(0.28, 0.58),
+      Offset(0.43, 0.76),
+      Offset(0.61, 0.52),
+      Offset(0.78, 0.7),
+      Offset(0.9, 0.43),
+    ];
+    final points = normalized
+        .map((point) => Offset(point.dx * size.width, point.dy * size.height))
+        .toList();
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = LithicaColors.logoTeal.withValues(alpha: dark ? 0.2 : 0.15);
+    for (var i = 0; i < points.length - 1; i++) {
+      canvas.drawLine(points[i], points[i + 1], line);
+      if (i + 2 < points.length) {
+        canvas.drawLine(points[i], points[i + 2], line);
+      }
+    }
+    for (final point in points) {
+      canvas.drawCircle(
+        point,
+        7,
+        Paint()
+          ..color = LithicaColors.logoGreen.withValues(
+            alpha: dark ? 0.2 : 0.14,
+          ),
+      );
+      canvas.drawCircle(point, 3, Paint()..color = line.color);
+    }
   }
 
   void _drawContourFamily(

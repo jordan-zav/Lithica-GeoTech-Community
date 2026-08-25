@@ -103,14 +103,51 @@ class _LaunchSplashPageState extends State<_LaunchSplashPage> {
           duration: const Duration(milliseconds: 900),
           curve: Curves.easeOutCubic,
           opacity: _visible ? 1 : 0,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: FractionallySizedBox(
-              widthFactor: 0.72,
-              child: Image.asset(
-                'assets/branding/logo_complete.png',
-                fit: BoxFit.contain,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 430),
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(30, 28, 30, 24),
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.14),
+                  blurRadius: 34,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/branding/logo_complete.png', height: 128),
+                const SizedBox(height: 18),
+                Text(
+                  'Conectando conocimiento geotécnico',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const LinearProgressIndicator(minHeight: 5),
+                const SizedBox(height: 16),
+                const Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 18,
+                  children: [
+                    Icon(Icons.groups_2_outlined, size: 19),
+                    Icon(Icons.hub_outlined, size: 19),
+                    Icon(Icons.menu_book_outlined, size: 19),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
