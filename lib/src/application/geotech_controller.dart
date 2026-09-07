@@ -8,7 +8,10 @@ class GeotechController extends ChangeNotifier {
   static const _expertModeKey = 'lithica_geotech_expert_mode_v1';
 
   ThemeMode themeMode = ThemeMode.system;
-  String languageCode = 'es';
+  String languageCode =
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'es'
+      ? 'es'
+      : 'en';
   double guiScale = 1.0;
   bool expertMode = false;
 
@@ -34,6 +37,8 @@ class GeotechController extends ChangeNotifier {
 
       if (savedLang == 'es' || savedLang == 'en') {
         languageCode = savedLang!;
+      } else {
+        await prefs.setString(_langKey, languageCode);
       }
 
       if (savedScale != null && savedScale >= 0.8 && savedScale <= 1.4) {

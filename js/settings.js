@@ -12,7 +12,7 @@ const STORAGE_KEYS = {
 
 export const AppSettings = {
   themePreference: 'system', // 'system' | 'light' | 'dark'
-  languageCode: 'es',       // 'es' | 'en'
+  languageCode: (globalThis.navigator?.language || '').toLowerCase().split(/[-_]/)[0] === 'es' ? 'es' : 'en',       // 'es' | 'en'
   guiScale: 1.0,            // 0.8 to 1.4
   systemThemeMediaQuery: null
 };
@@ -37,6 +37,8 @@ function loadPreferences() {
     const savedLang = localStorage.getItem(STORAGE_KEYS.LANG);
     if (['es', 'en'].includes(savedLang)) {
       AppSettings.languageCode = savedLang;
+    } else {
+      localStorage.setItem(STORAGE_KEYS.LANG, AppSettings.languageCode);
     }
 
     const savedScale = parseFloat(localStorage.getItem(STORAGE_KEYS.SCALE));
