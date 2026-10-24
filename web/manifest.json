@@ -1,0 +1,9 @@
+{
+  "name": "Lithica GeoTech",
+  "short_name": "GeoTech",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#103050",
+  "description": "Herramientas de geotecnia de Lithica."
+}
