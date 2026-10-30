@@ -10,14 +10,25 @@ plugins {
 
 val signingProperties = Properties()
 val signingPropertiesFile = rootProject.file("key.properties")
-if (!signingPropertiesFile.exists()) {
-    throw GradleException("Falta android/key.properties para firmar Lithica GeoTech.")
+if (signingPropertiesFile.exists()) {
+    signingPropertiesFile.inputStream().use(signingProperties::load)
 }
-signingPropertiesFile.inputStream().use(signingProperties::load)
 
 val signingStoreFile =
-    signingProperties.getProperty("storeFile")
-        ?: throw GradleException("Falta storeFile en android/key.properties.")
+    if (signingPropertiesFile.exists()) {
+        signingProperties.getProperty("storeFile")
+            ?: throw GradleException("Falta storeFile en android/key.properties.")
+    } else {
+        null
+    }
+
+// Configuration and debug tasks do not need release credentials.
+// Every task graph containing a release still requires the existing key.
+gradle.taskGraph.whenReady {
+    if (allTasks.any { it.name.contains("release", ignoreCase = true) } && !signingPropertiesFile.exists()) {
+        throw GradleException("Falta android/key.properties para firmar Lithica GeoTech.")
+    }
+}
 
 android {
     namespace = "com.gisgeodev.lithicageotech"
@@ -29,9 +40,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
 
     defaultConfig {
         applicationId = "com.gisgeodev.lithicageotech"
@@ -47,7 +55,7 @@ android {
         create("release") {
             keyAlias = signingProperties.getProperty("keyAlias")
             keyPassword = signingProperties.getProperty("keyPassword")
-            storeFile = rootProject.file(signingStoreFile)
+            storeFile = signingStoreFile?.let { rootProject.file(it) }
             storePassword = signingProperties.getProperty("storePassword")
         }
     }
@@ -61,4 +69,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
