@@ -53,3 +53,5 @@ firebase_options.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+AGENTS.md
